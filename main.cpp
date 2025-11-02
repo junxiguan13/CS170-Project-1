@@ -6,18 +6,21 @@
 #include "Problem.h"
 using namespace std;
 
-void printPuzzleState(const vector<vector<int>>& state) {
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            if (state[i][j] == 0)
+/*
+void printPuzzleState(const vector<vector<int>>& state){
+    for(int i = 0; i < 3; ++i){
+        for (int j = 0; j < 3; ++j){
+            if (state[i][j] == 0){
                 cout << "b ";
-            else
+            }else{
                 cout << state[i][j] << " ";
+            }
         }
         cout << endl;
     }
     cout << endl;
 }
+*/
 
 int main(int argc, char *argv[]) {
 
@@ -80,24 +83,19 @@ int main(int argc, char *argv[]) {
         result = puzzle.MisplacedTile();
     }
     else if(algorithm == "3"){
-        //result = puzzle.aStarEuclidean();
+        result = puzzle.aStarEuclidean();
     }
 
 
-    for (auto& node : result.expandedNodes) {
+   /* for (auto& node : result.expandedNodes) {
         cout << "Expanding state\n";
         printPuzzleState(node->puzzleState);
-
         if (node->parentNode) {
-            cout << "The best state to expand with g(n) = " 
-                 << node->costSoFar 
-                 << " and h(n) = " 
-                 << node->heuristic 
-                 << " is...\n";
+            cout << "The best state to expand with g(n) = " << node->costSoFar << " and h(n) = " << node->heuristic << " is...\n";
             printPuzzleState(node->puzzleState);
         }
     }
-
+*/
     if (result.goalNode) {
         cout << "Goal!!!\n";
         cout << "To solve this problem the search algorithm expanded a total of "
@@ -106,7 +104,7 @@ int main(int argc, char *argv[]) {
              << result.maxFrontierSize << ".\n";
         cout << "The depth of the goal node was " << result.goalDepth << ".\n";
     } else {
-        cout << "No solution found.\n";
+        cout << "No solution.\n";
     }
 
     return 0;

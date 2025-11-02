@@ -15,10 +15,10 @@ struct Node {
     vector<vector<int> > puzzleState ;
     shared_ptr<Node> parentNode;
     int costSoFar;
-    int heuristic;
-    int totalCost;
+    double heuristic;
+    double totalCost;
 
-    Node(vector<vector<int> > state, shared_ptr<Node> parent = nullptr, int cost = 0, int h = 0){
+    Node(vector<vector<int> > state, shared_ptr<Node> parent = nullptr, int cost = 0, double h = 0){
         puzzleState = state;
         parentNode = parent;
         costSoFar = cost; //g
@@ -49,11 +49,10 @@ class Problem{
     public:
         Problem(const vector<vector<int> >& initial);
         double euclideanDistance(const vector<vector<int>>& state) const;
-        vector<vector<int> > getInitialState() const;
-        vector<vector<int> > getGoalState() const;
         Answer uniformCostSearch();
         Answer MisplacedTile();
-        //Answer aStarEuclidean();
+        double euclideanDistance(const vector<vector<int>>& state);
+        Answer aStarEuclidean();
 
     
 };
