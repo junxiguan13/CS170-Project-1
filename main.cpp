@@ -3,13 +3,26 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include "Problem.h"
 using namespace std;
 
+void printPuzzleState(const vector<vector<int>>& state) {
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            if (state[i][j] == 0)
+                cout << "b ";
+            else
+                cout << state[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 
 int main(int argc, char *argv[]) {
 
 
-    vector<vector<int>> startState(3, vector<int>(3));
+    vector<vector<int> > startState(3, vector<int>(3));
 
     string input;
     
@@ -42,7 +55,7 @@ int main(int argc, char *argv[]) {
                 for (int j = 0; j < 3; ++j) {
                     cin >> startState[rowinputcounter - 1][j];
                 }
-                rowinputcounter++;
+                rowinputcounter++;//adsfa
             }
             repeat = false;
         }
@@ -57,7 +70,45 @@ int main(int argc, char *argv[]) {
     string algorithm;
     cin >> algorithm;
 
-    //Problem Puzzle;
+    Problem puzzle(startState);
+
+    Answer result;
+    if (algorithm == "1") {
+        result = puzzle.uniformCostSearch();
+    }
+    else if(algorithm == "2"){
+        //result = puzzle.
+    }
+    else if(algorithm == "3"){
+        //result = puzzle.
+    }
+
+
+    for (auto& node : result.expandedNodes) {
+        cout << "Expanding state\n";
+        printPuzzleState(node->puzzleState);
+
+        if (node->parentNode) {
+            cout << "The best state to expand with g(n) = " 
+                 << node->costSoFar 
+                 << " and h(n) = " 
+                 << node->heuristic 
+                 << " is...\n";
+            printPuzzleState(node->puzzleState);
+            cout << "Expanding this node...\n\n";
+        }
+    }
+
+    if (result.goalNode) {
+        cout << "Goal!!!\n";
+        cout << "To solve this problem the search algorithm expanded a total of "
+             << result.totalExpanded << " nodes.\n";
+        cout << "The maximum number of nodes in the queue at any one time: "
+             << result.maxFrontierSize << ".\n";
+        cout << "The depth of the goal node was " << result.goalDepth << ".\n";
+    } else {
+        cout << "No solution found.\n";
+    }
 
     return 0;
 }
