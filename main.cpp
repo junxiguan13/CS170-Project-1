@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
         cin >> input;
         if (input == "1") {
             startState = {
-                {1, 3, 0},
+                {1, 0, 3},
                 {4, 2, 6},
                 {7, 5, 8}
             };
@@ -77,10 +77,10 @@ int main(int argc, char *argv[]) {
         result = puzzle.uniformCostSearch();
     }
     else if(algorithm == "2"){
-        //result = puzzle.
+        result = puzzle.MisplacedTile();
     }
     else if(algorithm == "3"){
-        //result = puzzle.
+        //result = puzzle.aStarEuclidean();
     }
 
 
@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
                  << node->heuristic 
                  << " is...\n";
             printPuzzleState(node->puzzleState);
-            cout << "Expanding this node...\n\n";
         }
     }
 

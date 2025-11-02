@@ -48,9 +48,13 @@ class Problem{
 
     public:
         Problem(const vector<vector<int> >& initial);
+        double euclideanDistance(const vector<vector<int>>& state) const;
         vector<vector<int> > getInitialState() const;
         vector<vector<int> > getGoalState() const;
         Answer uniformCostSearch();
+        Answer MisplacedTile();
+        //Answer aStarEuclidean();
+
     
 };
 
