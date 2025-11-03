@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     int rowinputcounter = 1;
     bool repeat = true;
     while(repeat){
-        cout << "Type “1” to use a default puzzle, or “2” to enter your own puzzle.\n" << endl;
+        cout << "Type 1 to use a default puzzle, or 2 to enter your own puzzle.\n" << endl;
 
         cin >> input;
         if (input == "1") {
