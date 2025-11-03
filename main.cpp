@@ -60,9 +60,9 @@ int main() {
             cout << "Enter each number one by one in the first row: ";
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
-                cin >> puzz_input;
-                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
-                    cout << "Not a valid input!" << endl;
+                if (!(cin >> puzz_input)) {//check for unexpected input like char
+                    cout << "Not a valid input (expect an integer). Please Try again." << endl;
+                    cin.clear();
                     exit(1);
                 }
                 initial.push_back(puzz_input);
@@ -71,9 +71,9 @@ int main() {
             cout << "Enter each number one by one in the second row: " << endl;
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
-                cin >> puzz_input;
-                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
-                    cout << "Not a valid input!" << endl;
+                if (!(cin >> puzz_input)) {
+                    cout << "Not a valid input (expect an integer). Please Try again." << endl;
+                    cin.clear();
                     exit(1);
                 }
                 initial.push_back(puzz_input);
@@ -82,9 +82,9 @@ int main() {
             cout << "Enter each number one by one in the third row: " << endl;
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
-                cin >> puzz_input;
-                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
-                    cout << "Not a valid input!" << endl;
+                if (!(cin >> puzz_input)) {
+                    cout << "Not a valid input (expect an integer). Please Try again." << endl;
+                    cin.clear();
                     exit(1);
                 }
                 initial.push_back(puzz_input);
