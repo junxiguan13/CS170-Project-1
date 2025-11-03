@@ -8,7 +8,8 @@
 #include <unordered_map>
 #include <string>
 #include <cmath>
-#include <deque>
+#include <cctype>
+#include <deque>//use deque instead of vector bc using vector will be overwritten due to a large total number of states
 
 using namespace std;
 

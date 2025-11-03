@@ -54,13 +54,17 @@ int main() {
         else if (puzz_choice == '2') {
             cout << "Enter your puzzle, use a zero to represent the blank" << endl;
             vector<int> initial;
-            vector<int> goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
+            vector<int> goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};//for a 3*3 puzzle standard goal
             const int size = 3;
 
             cout << "Enter each number one by one in the first row: ";
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
+                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
+                    cout << "Not a valid input!" << endl;
+                    exit(1);
+                }
                 initial.push_back(puzz_input);
             }
 
@@ -68,6 +72,10 @@ int main() {
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
+                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
+                    cout << "Not a valid input!" << endl;
+                    exit(1);
+                }
                 initial.push_back(puzz_input);
             }
 
@@ -75,6 +83,10 @@ int main() {
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
+                if (!isdigit(puzz_input)) {//when user did not enter a valid number, 
+                    cout << "Not a valid input!" << endl;
+                    exit(1);
+                }
                 initial.push_back(puzz_input);
             }
 
@@ -84,6 +96,12 @@ int main() {
                 if (i % 3 == 2) {
                     cout << endl;
                 }
+            }
+
+            if (!is_permutation(goal.begin(), goal.end(), initial.begin())) {//check if the user input has same elements in the goal
+                cout << "Not a valid puzzle. Elements do not match in goal." << endl;
+                cout << "Please try agian" << endl;
+                continue;
             }
 
             Problem Prob(initial, goal, size);
