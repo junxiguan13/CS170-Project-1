@@ -1,0 +1,85 @@
+#ifndef PROBLEM_H
+#define PROBLEM_H
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <utility>
+#include <unordered_map>
+#include <string>
+#include <cmath>
+#include <cctype>
+#include <deque>//use deque instead of vector bc using vector will be overwritten due to a large total number of states
+
+using namespace std;
+
+struct Node {
+    vector<int> state;
+    int g;
+    int h;
+    int blank;
+
+    char move;//only contains L, R, U, D
+    Node* prev;
+
+    int f() const {
+        return g + h;
+    }
+
+    Node() : g(0), h(0), blank(-1), move('?'), prev(nullptr) {}
+    Node(const vector<int>& curr_state, int curr_g, int curr_h, int curr_blank, char curr_move, Node* prev_node)
+        : state(curr_state), g(curr_g), h(curr_h), blank(curr_blank), move(curr_move), prev(prev_node) {}
+};
+
+class Tree {
+    public:
+        Node* final_solution;
+        Tree() : final_solution(nullptr) {}
+};
+
+class Problem {
+    public:
+        enum Heuristic {ZERO, MISPLACED, EUCLIDEAN};
+        int computeH(const vector<int>& , Heuristic) const;
+
+    private:
+        vector<int> initial;
+        vector<int> goal;
+        const int size;
+
+        int h_misplaced_distance(const vector<int>& ) const;
+        int h_euclidean_distance(const vector<int>& ) const;
+
+        //helper function
+        string find_key(const vector<int>& ) const;
+        int find_blank(const vector<int>& ) const;
+
+        //operators
+        bool moveUp(const vector<int>& , int , vector<int>& , int& ) const;
+        bool moveDown(const vector<int>& , int , vector<int>& , int& ) const;
+        bool moveLeft(const vector<int>& , int , vector<int>& , int& ) const;
+        bool moveRight(const vector<int>& , int , vector<int>& , int& ) const;
+        void moveCore(const vector<int>& next_state, 
+              const int next_blank, 
+              const Node& smallest_node,
+              int prev_id,
+              char move, 
+              Heuristic h_type, 
+              unordered_map<string, int>& best_g, 
+              deque<Node>& all_nodes, 
+              priority_queue<pair<int, int>>& smallestF_queue) const;
+        
+        //print function
+        void printExpand(const Node& ) const;
+        void printGoal(int , int , int ) const;
+        void printSolution(const Node* ) const;
+
+    public:
+        Problem();
+        explicit Problem(const vector<int>& , const vector<int>& , const int );
+        void run_UniformCost() const;
+        void run_AStarMisplaced() const;
+        void run_AStarEuclidean() const;
+};
+
+#endif
