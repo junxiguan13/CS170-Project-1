@@ -6,9 +6,9 @@ Problem::Problem(const vector<int>& user_init, const vector<int>& user_goal, con
 
 void Problem::run_UniformCost() const {
     int init_g = 0;
-    int init_h = computeH(this->initial, ZERO);
+    int init_h = 0;
     int init_blank = find_blank(this->initial);
-    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank, '?', nullptr);
     //build the initial node 
 
     priority_queue<pair<int, int>> smallestF_queue;
@@ -19,17 +19,19 @@ void Problem::run_UniformCost() const {
     //second: 0 means the first index
 
     unordered_map<string, int> best_g;//this best_g is to check repeated
-    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    best_g.reserve(30000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
     vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(20000);
+    all_nodes.reserve(30000);
     all_nodes.push_back(init_node);
 
     //counter for print functions
     int total_node = 0;
     int max_queue = smallestF_queue.size();
+
+    Tree tree;//this stores the final solution of reverse pathway
 
     while (!smallestF_queue.empty()) {
         pair<int, int> smallest_pair = smallestF_queue.top();
@@ -49,39 +51,46 @@ void Problem::run_UniformCost() const {
             continue;
         }
 
-        printExpand(smallest_node);//print each step
-
         //check if this is already the goal state; if so just return
         if (smallest_state == this->goal) {
-            cout << "Found goal!" << endl;
             printGoal(total_node, max_queue, smallest_node.g);
+
+            cout << "Type \'Y\' to show solution path. Type others to skip." << endl;//ask if the user want to print the path in case the path is too long
+            char sol_choice;
+            cin >> sol_choice;
+            if (sol_choice == 'Y') {
+                tree.final_solution = &all_nodes[index];
+                printSolution(tree.final_solution);
+            }
+
             return;
         }
 
+        printExpand(smallest_node);//print each step
         total_node++;
 
         vector<int> up_state;
         int up_blank;
         if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
-            moveCore(up_state, up_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+            moveCore(up_state, up_blank, smallest_node, index, 'U', ZERO, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> down_state;
         int down_blank;
         if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
-            moveCore(down_state, down_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+            moveCore(down_state, down_blank, smallest_node, index, 'D', ZERO, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> left_state;
         int left_blank;
         if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
-            moveCore(left_state, left_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+            moveCore(left_state, left_blank, smallest_node, index, 'L', ZERO, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> right_state;
         int right_blank;
         if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
-            moveCore(right_state, right_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+            moveCore(right_state, right_blank, smallest_node, index, 'R', ZERO, best_g, all_nodes, smallestF_queue);
         }
 
         //update the max in queue
@@ -97,7 +106,7 @@ void Problem::run_AStarMisplaced() const {
     int init_g = 0;
     int init_h = computeH(this->initial, MISPLACED);
     int init_blank = find_blank(this->initial);
-    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank, '?', nullptr);
     //build the initial node 
 
     priority_queue<pair<int, int>> smallestF_queue;
@@ -108,18 +117,20 @@ void Problem::run_AStarMisplaced() const {
     //second: 0 means the first index
 
     unordered_map<string, int> best_g;//this best_g is to check repeated
-    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    best_g.reserve(30000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
     vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(20000);
+    all_nodes.reserve(30000);
     all_nodes.push_back(init_node);
 
     //counter for print functions
     int total_node = 0;
     int max_queue = smallestF_queue.size();
 
+    Tree tree;
+    
     while (!smallestF_queue.empty()) {
         pair<int, int> smallest_pair = smallestF_queue.top();
         smallestF_queue.pop();
@@ -138,39 +149,46 @@ void Problem::run_AStarMisplaced() const {
             continue;
         }
 
-        printExpand(smallest_node);//print each step
-
         //check if this is already the goal state; if so just return
         if (smallest_state == this->goal) {
-            cout << "Found goal!" << endl;
             printGoal(total_node, max_queue, smallest_node.g);
+
+            cout << "Type \'Y\' to show solution path. Type others to skip." << endl;//ask if the user want to print the path in case the path is too long
+            char sol_choice;
+            cin >> sol_choice;
+            if (sol_choice == 'Y') {
+                tree.final_solution = &all_nodes[index];
+                printSolution(tree.final_solution);
+            }
+
             return;
         }
 
+        printExpand(smallest_node);//print each step
         total_node++;
 
         vector<int> up_state;
         int up_blank;
         if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
-            moveCore(up_state, up_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+            moveCore(up_state, up_blank, smallest_node, index, 'U', MISPLACED, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> down_state;
         int down_blank;
         if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
-            moveCore(down_state, down_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+            moveCore(down_state, down_blank, smallest_node, index, 'D', MISPLACED, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> left_state;
         int left_blank;
         if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
-            moveCore(left_state, left_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+            moveCore(left_state, left_blank, smallest_node, index, 'L', MISPLACED, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> right_state;
         int right_blank;
         if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
-            moveCore(right_state, right_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+            moveCore(right_state, right_blank, smallest_node, index, 'R', MISPLACED, best_g, all_nodes, smallestF_queue);
         }
 
         //update the max in queue
@@ -186,7 +204,7 @@ void Problem::run_AStarEuclidean() const {
     int init_g = 0;
     int init_h = computeH(this->initial, EUCLIDEAN);
     int init_blank = find_blank(this->initial);
-    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank, '?', nullptr);
     //build the initial node 
 
     priority_queue<pair<int, int>> smallestF_queue;
@@ -197,17 +215,19 @@ void Problem::run_AStarEuclidean() const {
     //second: 0 means the first index
 
     unordered_map<string, int> best_g;//this best_g is to check repeated
-    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    best_g.reserve(30000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
     vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(20000);
+    all_nodes.reserve(30000);
     all_nodes.push_back(init_node);
 
     //counter for print functions
     int total_node = 0;
     int max_queue = smallestF_queue.size();
+
+    Tree tree;
 
     while (!smallestF_queue.empty()) {
         pair<int, int> smallest_pair = smallestF_queue.top();
@@ -227,39 +247,46 @@ void Problem::run_AStarEuclidean() const {
             continue;
         }
 
-        printExpand(smallest_node);//print each step
-
         //check if this is already the goal state; if so just return
         if (smallest_state == this->goal) {
-            cout << "Found goal!" << endl;
             printGoal(total_node, max_queue, smallest_node.g);
+
+            cout << "Type \'Y\' to show solution path. Type others to skip." << endl;//ask if the user want to print the path in case the path is too long
+            char sol_choice;
+            cin >> sol_choice;
+            if (sol_choice == 'Y') {
+                tree.final_solution = &all_nodes[index];
+                printSolution(tree.final_solution);
+            }
+
             return;
         }
 
+        printExpand(smallest_node);//print each step
         total_node++;
 
         vector<int> up_state;
         int up_blank;
         if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
-            moveCore(up_state, up_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+            moveCore(up_state, up_blank, smallest_node, index, 'U', EUCLIDEAN, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> down_state;
         int down_blank;
         if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
-            moveCore(down_state, down_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+            moveCore(down_state, down_blank, smallest_node, index, 'D', EUCLIDEAN, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> left_state;
         int left_blank;
         if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
-            moveCore(left_state, left_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+            moveCore(left_state, left_blank, smallest_node, index, 'L', EUCLIDEAN, best_g, all_nodes, smallestF_queue);
         }
 
         vector<int> right_state;
         int right_blank;
         if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
-            moveCore(right_state, right_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+            moveCore(right_state, right_blank, smallest_node, index, 'R', EUCLIDEAN, best_g, all_nodes, smallestF_queue);
         }
 
         //update the max in queue
@@ -419,6 +446,8 @@ bool Problem::moveRight(const vector<int>& curr_state, int curr_blank, vector<in
 void Problem::moveCore(const vector<int>& next_state, 
               const int next_blank, 
               const Node& smallest_node, 
+              int prev_id,
+              char move, 
               Heuristic h_type, 
               unordered_map<string, int>& best_g, 
               vector<Node>& all_nodes, 
@@ -431,9 +460,11 @@ void Problem::moveCore(const vector<int>& next_state,
         //if not found in the hash table, then it is a new state and build a new node
         //or if it has a smaller g, then we take that
         int next_h = computeH(next_state, h_type);
-        Node next_node = Node(next_state, next_g, next_h, next_blank);
+        Node next_node = Node(next_state, next_g, next_h, next_blank, move, nullptr);
 
         best_g[next_key] = next_g;//update the next state in best_g since this is not a repeated state
+        Node* prev_node = &all_nodes.at(prev_id);
+        next_node.prev = prev_node;//update parent
         all_nodes.push_back(next_node);//update the node in the vector since this move is feasible
         int next_order = all_nodes.size() - 1;
         smallestF_queue.push(make_pair(- next_node.f(), - next_order));//update it in the queue to compare f with other states
@@ -447,8 +478,14 @@ void Problem::printExpand(const Node& curr) const {
 
     cout << "The best state to expand with g(n) = " << curr.g << " and h(n) = " << curr.h << " is..." << endl;
     for (int i = 0; i < num_elem; ++i) {
-        cout << curr.state.at(i) << " ";
-        if (i % this->size == 2) {
+        if (curr.state.at(i) == 0) {//change 0 to b(blank)
+            cout << 'b' << " ";
+        }
+        else {
+            cout << curr.state.at(i) << " ";
+        }
+        
+        if (i % this->size == this->size - 1) {
             cout << endl;
         }
     }
@@ -461,4 +498,34 @@ void Problem::printGoal(int total_node, int max_queue, int goal_depth) const {
     cout << "To solve this problem the search algorithm expanded a total of " << total_node << " nodes." << endl;
     cout << "The maximum number of nodes in the queue at any one time: " << max_queue << "." << endl;
     cout << "The depth of the goal node was " << goal_depth << "." << endl;
+}
+
+void Problem::printSolution(const Node* goal_ptr) const {
+    if (goal_ptr == nullptr) {
+        return;
+    }
+
+    cout << "The solution path is: " << endl;
+    Node* curr_ptr = goal_ptr;
+
+    while (curr_ptr != nullptr) {
+        vector<int> sol_state = curr_ptr->state;
+
+        for (int i = 0; i < this->size; ++i) {//print the solution state
+            if (sol_state.at(i) == 0) {//change 0 to b(blank)
+                cout << 'b' << " ";
+            }
+            else {
+                cout << sol_state.at(i) << " ";
+            }
+
+            if (i % this->size == this->size - 1) {
+                cout << endl;
+            }
+        }
+
+        if (curr_ptr->move != '?') {//if this is not the root, then print the following statement
+            cout << "To achieve this state, we need: " << curr_ptr->move << endl << endl;
+        }
+    }
 }

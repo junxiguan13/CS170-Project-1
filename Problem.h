@@ -17,12 +17,22 @@ struct Node {
     int h;
     int blank;
 
-    int f() const{
+    char move;//only contains L, R, U, D
+    Node* prev;
+
+    int f() const {
         return g + h;
     }
 
-    Node() : g(0), h(0), blank(-1) {}
-    Node(const vector<int>& curr_state, int curr_g, int curr_h, int curr_blank) : state(curr_state), g(curr_g), h(curr_h), blank(curr_blank) {}
+    Node() : g(0), h(0), blank(-1), move('?'), prev(nullptr) {}
+    Node(const vector<int>& curr_state, int curr_g, int curr_h, int curr_blank, char curr_move, Node* prev_node)
+        : state(curr_state), g(curr_g), h(curr_h), blank(curr_blank), move(curr_move), prev(prev_node) {}
+};
+
+class Tree {
+    public:
+        Node* final_solution;
+        Tree() : final_solution(nullptr) {}
 };
 
 class Problem {
@@ -49,7 +59,9 @@ class Problem {
         bool moveRight(const vector<int>& , int , vector<int>& , int& ) const;
         void moveCore(const vector<int>& next_state, 
               const int next_blank, 
-              const Node& smallest_node, 
+              const Node& smallest_node,
+              int prev_id,
+              char move, 
               Heuristic h_type, 
               unordered_map<string, int>& best_g, 
               vector<Node>& all_nodes, 
@@ -58,6 +70,7 @@ class Problem {
         //print function
         void printExpand(const Node& ) const;
         void printGoal(int , int , int ) const;
+        void printSolution(const Node* ) const;
 
     public:
         Problem();
