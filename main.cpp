@@ -37,7 +37,7 @@ void runAlgor(const Problem& Prob) {
 
 int main() {
 
-    cout << "Welcome to <862293376> 8 puzzle solver." << endl;
+    cout << "Welcome to the 8 puzzle solver." << endl;
     bool repeat = true;
 
     while (repeat) {
