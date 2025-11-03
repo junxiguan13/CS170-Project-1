@@ -4,25 +4,34 @@
 using namespace std;
 
 void runAlgor(const Problem& Prob) {
-    cout << "Enter your choice of algorithm: " << endl;
-    cout << "1. Uniform Cost Search" << endl;
-    cout << "2. A* with the Misplaced Tile heuristic" << endl;
-    cout << "3. A* with the Euclidean distance heuristic" << endl;
+    bool repeat = true;
 
-    char algor_choice;
-    cin >> algor_choice;
-    if (algor_choice == '1') {
-        Prob.run_UniformCost();
+    while (repeat) {
+        cout << "Enter your choice of algorithm: " << endl;
+        cout << "1. Uniform Cost Search" << endl;
+        cout << "2. A* with the Misplaced Tile heuristic" << endl;
+        cout << "3. A* with the Euclidean distance heuristic" << endl;
+        cout << "4. Try a different puzzle" << endl;
+
+        char algor_choice;
+        cin >> algor_choice;
+        if (algor_choice == '1') {
+            Prob.run_UniformCost();
+        }
+        else if (algor_choice == '2') {
+            Prob.run_AStarMisplaced();
+        }
+        else if (algor_choice == '3') {
+            Prob.run_AStarEuclidean();
+        }
+        else if (algor_choice == '4') {
+            break;
+        }
+        else {
+            cout << "Undefined algorithm choice. Please try again!" << endl;
+        }
     }
-    else if (algor_choice == '2') {
-        Prob.run_AStarMisplaced();
-    }
-    else if (algor_choice == '3') {
-        Prob.run_AStarEuclidean();
-    }
-    else {
-        cout << "Undefined algorithm choice. Please try again!" << endl;
-    }
+
     return;
 }
 
