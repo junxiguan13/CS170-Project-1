@@ -1,33 +1,284 @@
 #include "Problem.h"
 
-explicit Problem::Problem(const vector<int>& user_init, const vector<int>& user_goal, const int user_size) : initial(user_init), goal(user_goal), size(user_size) {}
+Problem::Problem() : initial{1, 0, 3, 4, 2, 6, 7, 5, 8}, goal{1, 2, 3, 4, 5, 6, 7, 8, 0}, size(3) {}//default example (103 426 758)
 
-void run_UniformCost() const;
-void run_AStarMisplaced() const;
-void run_AStarEuclidean() const;
+Problem::Problem(const vector<int>& user_init, const vector<int>& user_goal, const int user_size) : initial(user_init), goal(user_goal), size(user_size) {}
 
-//After the operation steps:
-//get state representation in num and index of blank from the Node. also pass a new state if this is a legal move
-//the next step should be checking for repeated states
-//then creating a node by using the next and next_blank
-int find_g(const Node& prev_state);//IMPORTANT: NOT NEEDED. This function is just a reminder and shuold be deleted later.
-//we can do this by simply add one when creating node
-Node create_node(const vector<int>& new_state, const int& new_blank, const int size);//IMPORTANT: NOT NEEDED. This function is just a reminder and shuold be deleted later.
-//create a new valid node; must be already checked for legal operations and repeated states
-//Node nxt;
-//nxt.state = new_state;
-//nxt.g     = curr_state.g + 1
-//nxt.h = computeH(ns);
-//nxt.blank = next_blank;
+void Problem::run_UniformCost() const {
+    int init_g = 0;
+    int init_h = computeH(this->initial, ZERO);
+    int init_blank = find_blank(this->initial);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    //build the initial node 
+
+    priority_queue<pair<int, int>> smallestF_queue;
+    //pair<int, int>: the first int refers to the f value; the second int refers to the order that enters the queue(index simply)
+    //this is to determine which state the algorithm chooses due to smallest f
+    smallestF_queue.push(make_pair(- init_node.f(), - 0));
+    //first: adding minus so we can get the largest value(smallest f) in the queue
+    //second: 0 means the first index
+
+    unordered_map<string, int> best_g;//this best_g is to check repeated
+    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    string init_key = find_key(this->initial);
+    best_g[init_key] = 0;//the initial state should have g equals to 0
+
+    vector<Node> all_nodes;//this pool is to store all the nodes
+    all_nodes.reserve(20000);
+    all_nodes.push_back(init_node);
+
+    //counter for print functions
+    int total_node = 0;
+    int max_queue = smallestF_queue.size();
+
+    while (!smallestF_queue.empty()) {
+        pair<int, int> smallest_pair = smallestF_queue.top();
+        smallestF_queue.pop();
+        int index = - smallest_pair.second;//get the specific index of the state with smallest f
+
+        const Node& smallest_node = all_nodes.at(index);
+        const vector<int>& smallest_state = smallest_node.state;
+        int smallest_blank = smallest_node.blank;
+        //get the state representation and the index of blank with smallest f
+
+        //we only want to expand on the state which has the smallest f; to avoid repeated expanding, use the following
+        //NOTE: consider including <it_smallest == best_g.end()> in the if statement if something unexpected happened
+        string smallest_key = find_key(smallest_state);
+        unordered_map<string,int>::iterator it_smallest = best_g.find(smallest_key);
+        if (it_smallest == best_g.end() || smallest_node.g != it_smallest->second) {
+            continue;
+        }
+
+        printExpand(smallest_node);//print each step
+
+        //check if this is already the goal state; if so just return
+        if (smallest_state == this->goal) {
+            cout << "Found goal!" << endl;
+            printGoal(total_node, max_queue, smallest_node.g);
+            return;
+        }
+
+        total_node++;
+
+        vector<int> up_state;
+        int up_blank;
+        if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
+            moveCore(up_state, up_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> down_state;
+        int down_blank;
+        if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
+            moveCore(down_state, down_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> left_state;
+        int left_blank;
+        if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
+            moveCore(left_state, left_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> right_state;
+        int right_blank;
+        if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
+            moveCore(right_state, right_blank, smallest_node, ZERO, best_g, all_nodes, smallestF_queue);
+        }
+
+        //update the max in queue
+        if (smallestF_queue.size() > max_queue) {
+            max_queue = smallestF_queue.size();
+        }
+    }//end while loop
+
+    cout << "Goal not found!" << endl;
+}
+
+void Problem::run_AStarMisplaced() const {
+    int init_g = 0;
+    int init_h = computeH(this->initial, MISPLACED);
+    int init_blank = find_blank(this->initial);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    //build the initial node 
+
+    priority_queue<pair<int, int>> smallestF_queue;
+    //pair<int, int>: the first int refers to the f value; the second int refers to the order that enters the queue(index simply)
+    //this is to determine which state the algorithm chooses due to smallest f
+    smallestF_queue.push(make_pair(- init_node.f(), - 0));
+    //first: adding minus so we can get the largest value(smallest f) in the queue
+    //second: 0 means the first index
+
+    unordered_map<string, int> best_g;//this best_g is to check repeated
+    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    string init_key = find_key(this->initial);
+    best_g[init_key] = 0;//the initial state should have g equals to 0
+
+    vector<Node> all_nodes;//this pool is to store all the nodes
+    all_nodes.reserve(20000);
+    all_nodes.push_back(init_node);
+
+    //counter for print functions
+    int total_node = 0;
+    int max_queue = smallestF_queue.size();
+
+    while (!smallestF_queue.empty()) {
+        pair<int, int> smallest_pair = smallestF_queue.top();
+        smallestF_queue.pop();
+        int index = - smallest_pair.second;//get the specific index of the state with smallest f
+
+        const Node& smallest_node = all_nodes.at(index);
+        const vector<int>& smallest_state = smallest_node.state;
+        int smallest_blank = smallest_node.blank;
+        //get the state representation and the index of blank with smallest f
+
+        //we only want to expand on the state which has the smallest f; to avoid repeated expanding, use the following
+        //NOTE: consider including <it_smallest == best_g.end()> in the if statement if something unexpected happened
+        string smallest_key = find_key(smallest_state);
+        unordered_map<string,int>::iterator it_smallest = best_g.find(smallest_key);
+        if (it_smallest == best_g.end() || smallest_node.g != it_smallest->second) {
+            continue;
+        }
+
+        printExpand(smallest_node);//print each step
+
+        //check if this is already the goal state; if so just return
+        if (smallest_state == this->goal) {
+            cout << "Found goal!" << endl;
+            printGoal(total_node, max_queue, smallest_node.g);
+            return;
+        }
+
+        total_node++;
+
+        vector<int> up_state;
+        int up_blank;
+        if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
+            moveCore(up_state, up_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> down_state;
+        int down_blank;
+        if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
+            moveCore(down_state, down_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> left_state;
+        int left_blank;
+        if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
+            moveCore(left_state, left_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> right_state;
+        int right_blank;
+        if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
+            moveCore(right_state, right_blank, smallest_node, MISPLACED, best_g, all_nodes, smallestF_queue);
+        }
+
+        //update the max in queue
+        if (smallestF_queue.size() > max_queue) {
+            max_queue = smallestF_queue.size();
+        }
+    }//end while loop
+
+    cout << "Goal not found!" << endl;
+}
+
+void Problem::run_AStarEuclidean() const {
+    int init_g = 0;
+    int init_h = computeH(this->initial, EUCLIDEAN);
+    int init_blank = find_blank(this->initial);
+    Node init_node = Node(this->initial, init_g, init_h, init_blank);
+    //build the initial node 
+
+    priority_queue<pair<int, int>> smallestF_queue;
+    //pair<int, int>: the first int refers to the f value; the second int refers to the order that enters the queue(index simply)
+    //this is to determine which state the algorithm chooses due to smallest f
+    smallestF_queue.push(make_pair(- init_node.f(), - 0));
+    //first: adding minus so we can get the largest value(smallest f) in the queue
+    //second: 0 means the first index
+
+    unordered_map<string, int> best_g;//this best_g is to check repeated
+    best_g.reserve(20000);//to avoid reallocation or data overwritten since we will have plenty of states while running the algorithm
+    string init_key = find_key(this->initial);
+    best_g[init_key] = 0;//the initial state should have g equals to 0
+
+    vector<Node> all_nodes;//this pool is to store all the nodes
+    all_nodes.reserve(20000);
+    all_nodes.push_back(init_node);
+
+    //counter for print functions
+    int total_node = 0;
+    int max_queue = smallestF_queue.size();
+
+    while (!smallestF_queue.empty()) {
+        pair<int, int> smallest_pair = smallestF_queue.top();
+        smallestF_queue.pop();
+        int index = - smallest_pair.second;//get the specific index of the state with smallest f
+
+        const Node& smallest_node = all_nodes.at(index);
+        const vector<int>& smallest_state = smallest_node.state;
+        int smallest_blank = smallest_node.blank;
+        //get the state representation and the index of blank with smallest f
+
+        //we only want to expand on the state which has the smallest f; to avoid repeated expanding, use the following
+        //NOTE: consider including <it_smallest == best_g.end()> in the if statement if something unexpected happened
+        string smallest_key = find_key(smallest_state);
+        unordered_map<string,int>::iterator it_smallest = best_g.find(smallest_key);
+        if (it_smallest == best_g.end() || smallest_node.g != it_smallest->second) {
+            continue;
+        }
+
+        printExpand(smallest_node);//print each step
+
+        //check if this is already the goal state; if so just return
+        if (smallest_state == this->goal) {
+            cout << "Found goal!" << endl;
+            printGoal(total_node, max_queue, smallest_node.g);
+            return;
+        }
+
+        total_node++;
+
+        vector<int> up_state;
+        int up_blank;
+        if (moveUp(smallest_state, smallest_blank, up_state, up_blank)) {//if this is a feasible move, check repeated
+            moveCore(up_state, up_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> down_state;
+        int down_blank;
+        if (moveDown(smallest_state, smallest_blank, down_state, down_blank)) {
+            moveCore(down_state, down_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> left_state;
+        int left_blank;
+        if (moveLeft(smallest_state, smallest_blank, left_state, left_blank)) {
+            moveCore(left_state, left_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+        }
+
+        vector<int> right_state;
+        int right_blank;
+        if (moveRight(smallest_state, smallest_blank, right_state, right_blank)) {
+            moveCore(right_state, right_blank, smallest_node, EUCLIDEAN, best_g, all_nodes, smallestF_queue);
+        }
+
+        //update the max in queue
+        if (smallestF_queue.size() > max_queue) {
+            max_queue = smallestF_queue.size();
+        }
+    }//end while loop
+
+    cout << "Goal not found!" << endl;
+}
 
 int Problem::computeH(const vector<int>& curr_state, Heuristic h_type) const {
-    if (htype == ZERO) {
+    if (h_type == ZERO) {
         return 0;
     }
-    if (htype == MISPLACED) {
-        return hMisplaced(curr_state);
+    if (h_type == MISPLACED) {
+        return h_misplaced_distance(curr_state);
     }
-    return hEuclidean(curr_state);
+    return h_euclidean_distance(curr_state);
 }
 
 //find the h for misplaced algor; called by the funtion <computeH>
@@ -48,18 +299,49 @@ int Problem::h_misplaced_distance(const vector<int>& curr_state) const {
 }
 
 //find the h for enclidean algor; called by the function <computeH>
-int Problem::h_euclidean_distance(const vector<int>& curr_state) {
-    return 0;
+int Problem::h_euclidean_distance(const vector<int>& curr_state) const{
+    const int num_elem = this->size * this->size;
+    unordered_map <int, int> goalIndexOf;
+    goalIndexOf.reserve(num_elem);
+    //we want to make this work for general cases; considering goal state is not in consecutive form and numbers are randomly inputted
+
+    for (int i = 0; i < num_elem; ++i) {//storing each goal index in the hash table goalIndexOf
+        int val = this->goal.at(i);
+        goalIndexOf[val] = i;
+    }
+
+    //next to run a loop and compute the total euclidean distance
+    double eu_total = 0;
+    for (int i = 0; i < num_elem; ++i) {
+        int val = curr_state.at(i);
+        int goalElem_index = goalIndexOf[val];
+        int currElem_index = i;
+
+        int x_dist = 0;
+        int y_dist = 0;
+
+        if (val != 0 && goalElem_index != currElem_index) {//we do not count the element zero
+            x_dist = abs(currElem_index % this->size - goalElem_index % this->size);
+            y_dist = abs(currElem_index / this->size - goalElem_index / this->size);
+
+        }
+
+        double eu_dist = sqrt(x_dist * x_dist + y_dist * y_dist);
+        eu_total += eu_dist;
+    }
+
+    return ceil(eu_total);
 }
 
 //convert states from numbers to a string; use for hash table to check repeated state
 string Problem::find_key(const vector<int>& curr_state) const {
+    const int num_elem = this->size * this->size;
     string key = "";
-    key.reserve(this->size * 2);
+    key.reserve(num_elem * 2);
     //curr_state gets the string form of state numeric representation, each number is separated by a comma.
-    //so (size * 2 - 1) times of comma in total, we reserve a (size * 2) space
+    //so (size * size * 2 - 1) times of comma in total, we reserve a (size * 2) space
 
-    for (int i = 0; i < this->size; ++i) {
+    for (int i = 0; i < num_elem; ++i) {
         if (i != 0) {
             key += ',';
         }
@@ -73,8 +355,8 @@ string Problem::find_key(const vector<int>& curr_state) const {
 
 //get the index of the blank; use to determine feasible movements(up, down, left, right)
 int Problem::find_blank(const vector<int>& curr_state) const {
-
-    for (int i = 0; i < this->size; ++i) {
+    const int num_elem = this->size * this->size;
+    for (int i = 0; i < num_elem; ++i) {
         if (curr_state.at(i) == 0) {
             return i;
         }
@@ -132,4 +414,51 @@ bool Problem::moveRight(const vector<int>& curr_state, int curr_blank, vector<in
     next_state = curr_state;//copy from curr, swap blank and the element
     swap(next_state.at(next_blank), next_state.at(curr_blank));
     return true;
+}
+
+void Problem::moveCore(const vector<int>& next_state, 
+              const int next_blank, 
+              const Node& smallest_node, 
+              Heuristic h_type, 
+              unordered_map<string, int>& best_g, 
+              vector<Node>& all_nodes, 
+              priority_queue<pair<int, int>>& smallestF_queue) const{
+    string next_key = find_key(next_state);
+
+    int next_g = smallest_node.g + 1;
+    unordered_map<string,int>::iterator itBestg = best_g.find(next_key);
+    if (itBestg == best_g.end() || next_g < itBestg->second) {
+        //if not found in the hash table, then it is a new state and build a new node
+        //or if it has a smaller g, then we take that
+        int next_h = computeH(next_state, h_type);
+        Node next_node = Node(next_state, next_g, next_h, next_blank);
+
+        best_g[next_key] = next_g;//update the next state in best_g since this is not a repeated state
+        all_nodes.push_back(next_node);//update the node in the vector since this move is feasible
+        int next_order = all_nodes.size() - 1;
+        smallestF_queue.push(make_pair(- next_node.f(), - next_order));//update it in the queue to compare f with other states
+    }
+
+    return;
+}
+
+void Problem::printExpand(const Node& curr) const {
+    const int num_elem = this->size * this->size;
+
+    cout << "The best state to expand with g(n) = " << curr.g << " and h(n) = " << curr.h << " is..." << endl;
+    for (int i = 0; i < num_elem; ++i) {
+        cout << curr.state.at(i) << " ";
+        if (i % this->size == 2) {
+            cout << endl;
+        }
+    }
+
+    cout << "Expanding this node..." << endl;
+}
+
+void Problem::printGoal(int total_node, int max_queue, int goal_depth) const {
+    cout << "Goal!!!" << endl;
+    cout << "To solve this problem the search algorithm expanded a total of " << total_node << " nodes." << endl;
+    cout << "The maximum number of nodes in the queue at any one time: " << max_queue << "." << endl;
+    cout << "The depth of the goal node was " << goal_depth << "." << endl;
 }
