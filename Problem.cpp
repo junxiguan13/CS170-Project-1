@@ -23,8 +23,7 @@ void Problem::run_UniformCost() const {
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
-    vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(30000);
+    deque<Node> all_nodes;//this pool is to store all the nodes
     all_nodes.push_back(init_node);
 
     //counter for print functions
@@ -121,8 +120,7 @@ void Problem::run_AStarMisplaced() const {
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
-    vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(30000);
+    deque<Node> all_nodes;//this pool is to store all the nodes
     all_nodes.push_back(init_node);
 
     //counter for print functions
@@ -219,8 +217,7 @@ void Problem::run_AStarEuclidean() const {
     string init_key = find_key(this->initial);
     best_g[init_key] = 0;//the initial state should have g equals to 0
 
-    vector<Node> all_nodes;//this pool is to store all the nodes
-    all_nodes.reserve(30000);
+    deque<Node> all_nodes;//this pool is to store all the nodes
     all_nodes.push_back(init_node);
 
     //counter for print functions
@@ -450,7 +447,7 @@ void Problem::moveCore(const vector<int>& next_state,
               char move, 
               Heuristic h_type, 
               unordered_map<string, int>& best_g, 
-              vector<Node>& all_nodes, 
+              deque<Node>& all_nodes, 
               priority_queue<pair<int, int>>& smallestF_queue) const{
     string next_key = find_key(next_state);
 
@@ -506,12 +503,13 @@ void Problem::printSolution(const Node* goal_ptr) const {
     }
 
     cout << "The solution path is: " << endl;
-    Node* curr_ptr = goal_ptr;
+    const Node* curr_ptr = goal_ptr;
+    int elem_size = this->size * this->size;
 
     while (curr_ptr != nullptr) {
         vector<int> sol_state = curr_ptr->state;
 
-        for (int i = 0; i < this->size; ++i) {//print the solution state
+        for (int i = 0; i < elem_size; ++i) {//print the solution state
             if (sol_state.at(i) == 0) {//change 0 to b(blank)
                 cout << 'b' << " ";
             }
@@ -525,7 +523,11 @@ void Problem::printSolution(const Node* goal_ptr) const {
         }
 
         if (curr_ptr->move != '?') {//if this is not the root, then print the following statement
-            cout << "To achieve this state, we need: " << curr_ptr->move << endl << endl;
+            cout << "To achieve the next state, we need: " << curr_ptr->move << endl << endl;
         }
-    }
+
+        curr_ptr = curr_ptr->prev;
+    }//end while loop
+
+    cout << "The above is your initial state. Solution path created!" << endl << endl;
 }

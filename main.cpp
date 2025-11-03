@@ -57,21 +57,21 @@ int main() {
             vector<int> goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
             const int size = 3;
 
-            cout << "Enter the first row, use space or tabs between numbers: ";
+            cout << "Enter each number one by one in the first row: ";
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
                 initial.push_back(puzz_input);
             }
 
-            cout << "Enter the second row, use space or tabs between numbers: " << endl;
+            cout << "Enter each number one by one in the second row: " << endl;
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
                 initial.push_back(puzz_input);
             }
 
-            cout << "Enter the third row, use space or tabs between numbers: " << endl;
+            cout << "Enter each number one by one in the third row: " << endl;
             for (int i = 0; i < 3; ++i) {
                 int puzz_input;
                 cin >> puzz_input;
@@ -79,7 +79,7 @@ int main() {
             }
 
             cout << "Your puzzle is: " << endl;
-            for (int i = 0; i < 9; ++i) {
+            for (int i = 0; i < 9; ++i) {//will change range for a different size puzzle
                 cout << initial.at(i) << " ";
                 if (i % 3 == 2) {
                     cout << endl;

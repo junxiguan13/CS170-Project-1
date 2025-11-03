@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <string>
 #include <cmath>
+#include <deque>
 
 using namespace std;
 
@@ -64,7 +65,7 @@ class Problem {
               char move, 
               Heuristic h_type, 
               unordered_map<string, int>& best_g, 
-              vector<Node>& all_nodes, 
+              deque<Node>& all_nodes, 
               priority_queue<pair<int, int>>& smallestF_queue) const;
         
         //print function
