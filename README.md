@@ -104,7 +104,7 @@ To test the efficiency of our implementation of the three algorithms, we used a 
 | Difficult (5)  | 91120 | 9120                 | 1067           |
 | Impossible (6) | 181440| 181440               | 181440         |
 
-
+![Figure 1](<images/project1 image1.png>)
 
 #### Maximum Queue Size
 | Test Case      | UCS   | A* (Misplaced Tile) | A* (Euclidean) |
@@ -115,6 +115,8 @@ To test the efficiency of our implementation of the three algorithms, we used a 
 | Medium (4)     | 18    | 4                    | 4              |
 | Difficult (5)  | 24983 | 5058                 | 599            |
 | Impossible (6) | 24054 | 22677                | 18987          |
+
+![Figure 1](<images/project1 image2.png>)
 
 ---
 ## Summary
