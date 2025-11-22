@@ -1,4 +1,4 @@
-# CS170 Project 1 — Eight-Puzzle Search (UCS & A*)
+Eight-Puzzle Search (UCS & A*)
 
 
 **Contributors**  
