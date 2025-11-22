@@ -1,4 +1,4 @@
-Eight-Puzzle Search (UCS & A*)
+# Eight-Puzzle Search (UCS & A*)
 
 
 **Contributors**  
